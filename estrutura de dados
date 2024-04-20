@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_ALUNOS 100
+#define MAX_NOME 50
+
+typedef struct {
+    char nome[MAX_NOME];
+    float notas[3];
+    float media;
+    char situacao[15];
+} Aluno;
+
+void calcular_situacao_final(Aluno *aluno) {
+    float soma = 0;
+    for (int i = 0; i < 3; i++) {
+        soma += aluno->notas[i];
+    }
+    aluno->media = soma / 3;
+    if (aluno->media >= 7.0) {
+        sprintf(aluno->situacao, "APROVADO");
+    } else {
+        sprintf(aluno->situacao, "REPROVADO");
+    }
+}
+
+void gravar_situacao_final(Aluno *alunos, int num_alunos) {
+    FILE *arquivo_saida = fopen("SituacaoFinal.csv", "w");
+    if (arquivo_saida == NULL) {
+        printf("Erro ao criar arquivo de saída.\n");
+        return;
+    }
+    fprintf(arquivo_saida, "Nome,Nota Média,Situação\n");
+    for (int i = 0; i < num_alunos; i++) {
+        fprintf(arquivo_saida, "%s,%.2f,%s\n", alunos[i].nome, alunos[i].media, alunos[i].situacao);
+    }
+    fclose(arquivo_saida);
+    printf("Situação final dos alunos gravada em SituacaoFinal.csv.\n");
+}
+
+int main() {
+    Aluno alunos[MAX_ALUNOS];
+    int num_alunos;
+
+    printf("Quantos alunos deseja avaliar? ");
+    scanf("%d", &num_alunos);
+    getchar(); // Limpar o buffer do teclado
+
+    if (num_alunos < 1 || num_alunos > MAX_ALUNOS) {
+        printf("Número inválido de alunos.\n");
+        return 1;
+    }
+
+    for (int i = 0; i < num_alunos; i++) {
+        printf("Digite o nome do aluno %d: ", i+1);
+        fgets(alunos[i].nome, MAX_NOME, stdin);
+        alunos[i].nome[strcspn(alunos[i].nome, "\n")] = '\0'; // Remover o caractere de nova linha
+
+        printf("Digite as notas do aluno %d (separadas por espaço): ", i+1);
+        scanf("%f %f %f", &alunos[i].notas[0], &alunos[i].notas[1], &alunos[i].notas[2]);
+        getchar(); // Limpar o buffer do teclado
+
+        calcular_situacao_final(&alunos[i]);
+    }
+
+    gravar_situacao_final(alunos, num_alunos);
+
+    return 0;
+}
